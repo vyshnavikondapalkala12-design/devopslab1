@@ -1,0 +1,49 @@
+const webdriver = require('selenium-webdriver');
+const assert = require('assert');
+const path = require('path');
+
+const driver = new webdriver.Builder().forBrowser('chrome').build();
+
+async function runTest() {
+    try {
+        // Get full path of index.html
+        const filePath = 'file://' + path.resolve(__dirname, 'index.html');
+
+        // Open the HTML file
+        await driver.get(filePath);
+
+        // Enter first number
+        const num1 = await driver.findElement(webdriver.By.id('num1'));
+        await num1.clear();
+        await num1.sendKeys('50');
+
+        // Enter second number
+        const num2 = await driver.findElement(webdriver.By.id('num2'));
+        await num2.clear();
+        await num2.sendKeys('10');
+
+        // Click Add button
+        const addButton = await driver.findElement(webdriver.By.id('add'));
+        await addButton.click();
+
+        // Read and verify result
+        const result = await driver.findElement(webdriver.By.id('result'));
+        const text = await result.getText();
+
+        assert.strictEqual(text, '60', 'Sum calculation is incorrect');
+
+        console.log('Test passed: Sum is correct');
+    } catch (error) {
+        console.error('Test failed:', error);
+    } finally {
+        console.log('Press any key to exit...');
+        process.stdin.setRawMode(true);
+        process.stdin.resume();
+        process.stdin.on('data', async () => {
+            await driver.quit();
+            process.exit(0);
+        });
+    }
+}
+
+runTest();
